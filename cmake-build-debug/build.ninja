@@ -87,7 +87,7 @@ build CMakeFiles/C_Atalogue.dir/bdd.c.o: C_COMPILER__C_Atalogue_unscanned_Debug 
 
 build C_Atalogue: C_EXECUTABLE_LINKER__C_Atalogue_Debug CMakeFiles/C_Atalogue.dir/main.c.o CMakeFiles/C_Atalogue.dir/menu.c.o CMakeFiles/C_Atalogue.dir/fonctions.c.o CMakeFiles/C_Atalogue.dir/bdd.c.o
   FLAGS = -g
-  LINK_LIBRARIES = -lmariadb
+  LINK_LIBRARIES = -lmariadb  -lm
   OBJECT_DIR = CMakeFiles/C_Atalogue.dir
   POST_BUILD = :
   PRE_LINK = :

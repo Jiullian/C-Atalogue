@@ -17,3 +17,4 @@ add_executable(C_Atalogue main.c
 # Ajouter le chemin de la bibliothèque et lier avec la bibliothèque MariaDB
 link_directories(/usr/lib/x86_64-linux-gnu/)
 target_link_libraries(C_Atalogue mariadb)
+target_link_libraries(C_Atalogue m)

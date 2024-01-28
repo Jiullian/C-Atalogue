@@ -24,18 +24,29 @@ bool verifier_ip(char ip[16]) {
     return false;
 }
 
-//Améliorer la fonction parce qu'on peut mettre n'importe quoi comme masque !!!!!!!!!!!!!
+bool estSegmentValide(int segment) {
+    int valeursValides[] = {0, 128, 192, 224, 240, 248, 252, 254, 255};
+    int taille = sizeof(valeursValides) / sizeof(valeursValides[0]);
+
+    for (int i = 0; i < taille; i++) {
+        if (segment == valeursValides[i]) {
+            return true;
+        }
+    }
+    return false;
+}
+
 bool verifier_mask(char mask[16]) {
     int segment1, segment2, segment3, segment4;
     char fin;
-    if (sscanf(mask, "%d.%d.%d.%d%c", &segment1, &segment2, &segment3, &segment4, &fin) == 4) {
-        // Vérifier que chaque segment est entre 0 et 255
-        if (segment1 >= 0 && segment1 <= 255 &&
-            segment2 >= 0 && segment2 <= 255 &&
-            segment3 >= 0 && segment3 <= 255 &&
-            segment4 >= 0 && segment4 <= 255) {
-            return true;
-        }
+
+    if (sscanf(mask, "%d.%d.%d.%d%c", &segment1, &segment2, &segment3, &segment4, &fin) == 4 &&
+        segment1 >= 0 && segment1 <= 255 &&
+        segment2 >= 0 && segment2 <= 255 &&
+        segment3 >= 0 && segment3 <= 255 &&
+        segment4 >= 0 && segment4 <= 255) {
+        return estSegmentValide(segment1) && estSegmentValide(segment2) &&
+               estSegmentValide(segment3) && estSegmentValide(segment4);
     }
     return false;
 }
@@ -122,12 +133,11 @@ int conversion_CIDR(char *Mask_Binaire) {
     return CIDR;
 }
 
-int ip_disponibles(const char *mask) {
+int ip_disponibles(char *mask) {
     char *Mask_Binaire= conversion_binaire(mask);
     int CIDR = conversion_CIDR(Mask_Binaire);
-    //calculer le nombre d'ip disponibles avec  2^(32 - CIDR) -2
     int nb_ip = pow(2, 32 - CIDR) - 2;
-    printf("Il y a %adresses IP disponibles dans le réseau.\n", nb_ip);
+    printf("Il y a %d adresses IP disponibles dans le réseau.\n", nb_ip);
     return nb_ip;
 }
 

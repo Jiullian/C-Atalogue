@@ -36,6 +36,12 @@
 				"parent" : 0
 			},
 			{
+				"command" : 1,
+				"file" : 0,
+				"line" : 20,
+				"parent" : 0
+			},
+			{
 				"command" : 2,
 				"file" : 0,
 				"line" : 7,
@@ -55,11 +61,11 @@
 			"includes" : 
 			[
 				{
-					"backtrace" : 3,
+					"backtrace" : 4,
 					"path" : "/usr/include/mariadb"
 				},
 				{
-					"backtrace" : 3,
+					"backtrace" : 4,
 					"path" : "/usr/include/mariadb/mysql"
 				}
 			],
@@ -97,6 +103,11 @@
 			{
 				"backtrace" : 2,
 				"fragment" : "-lmariadb",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 3,
+				"fragment" : "-lm",
 				"role" : "libraries"
 			}
 		],
