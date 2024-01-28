@@ -10,6 +10,10 @@
 MYSQL *conn;
 
 void connexion(){
+
+   // const char *host = "192.168.1.38";
+   // const char *user = "desktop-theo-1.home";
+    
     const char *host = "localhost";
     const char *user = "jiullian";
     const char *password = "root";
