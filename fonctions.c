@@ -141,8 +141,36 @@ int ip_disponibles(char *mask) {
     return nb_ip;
 }
 
+void calculer_IP(const char* ip, const char* mask, char* premiereIP, char* derniereIP) {
+    int ipParts[4], maskParts[4], networkParts[4], broadcastParts[4];
+
+    // Convertir les chaînes IP et masque en quatre parties entières
+    sscanf(ip, "%d.%d.%d.%d", &ipParts[0], &ipParts[1], &ipParts[2], &ipParts[3]);
+    sscanf(mask, "%d.%d.%d.%d", &maskParts[0], &maskParts[1], &maskParts[2], &maskParts[3]);
+
+    // Calcul de l'adresse réseau et de l'adresse de diffusion
+    for (int i = 0; i < 4; i++) {
+        networkParts[i] = ipParts[i] & maskParts[i];
+        broadcastParts[i] = networkParts[i] | (~maskParts[i] & 255);
+    }
+
+    // Calcul de la première adresse IP du réseau
+    if (maskParts[3] != 255) {
+        networkParts[3]++;
+    }
+
+    // Calcul de la dernière adresse IP du réseau
+    if (maskParts[3] != 255) {
+        broadcastParts[3]--;
+    }
+
+    // Construction des chaînes de la première et dernière adresse IP du réseau
+    sprintf(premiereIP, "%d.%d.%d.%d", networkParts[0], networkParts[1], networkParts[2], networkParts[3]);
+    sprintf(derniereIP, "%d.%d.%d.%d", broadcastParts[0], broadcastParts[1], broadcastParts[2], broadcastParts[3]);
+}
+
 void rechercher_mask(){
-    char ip[16], mask[16];
+    char ip[16], mask[16], premiere_ip[16], derniere_ip[16];
     printf("Veuillez entrer une adresse IP : ");
     scanf(" %s", ip);
     printf("Veuillez entrer un masque : ");
@@ -150,7 +178,9 @@ void rechercher_mask(){
     if (verifier_ip(ip) && verifier_mask(mask)){
         printf("L'adresse IP et le masque sont valides.\n", ip);
         int nb_ip = ip_disponibles(mask);
-
+        calculer_IP(ip, mask, premiere_ip, derniere_ip);
+        printf("Première adresse IP du réseau: %s\n", premiere_ip);
+        printf("Dernière adresse IP du réseau: %s\n", derniere_ip);
     } else {
         printf("L'adresse IP %s n'est pas valide.\n", ip);
     }
