@@ -9,4 +9,5 @@ void deconnexion();
 void insertion(const char *ip, const char *mask, const char *IP_Binaire, const char *IP_Hexadecimal);
 void liste();
 void suppression(const char *ip);
+void recherche(const char *ip_a, const char *ip_b, const char *mask);
 #endif //C_ATALOGUE_BDD_H

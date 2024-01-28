@@ -125,3 +125,39 @@ void suppression(const char *ip) {
         printf("Suppression effectuée avec succès.\n");
     }
 }
+
+void recherche(const char *ip_a, const char *ip_b, const char *mask){
+    MYSQL_RES *result;
+    MYSQL_ROW row;
+
+    // Construction de la requête SELECT
+    char query[1024];
+    sprintf(query, "SELECT * FROM Reseau WHERE ip BETWEEN '%s' AND '%s' AND mask = '%s'", ip_a, ip_b, mask);
+
+    // Exécution de la requête SELECT
+    if (mysql_query(conn, query)) {
+        fprintf(stderr, "Erreur mysql_query: %s\n", mysql_error(conn));
+        mysql_close(conn);
+        return;
+    }
+
+    // Récupération du résultat de la requête SELECT
+    result = mysql_store_result(conn);
+    if (result == NULL) {
+        fprintf(stderr, "Erreur mysql_store_result: %s\n", mysql_error(conn));
+        mysql_close(conn);
+        return;
+    }
+
+    int i = 1;
+    // Affichage du résultat de la requête SELECT
+    while ((row = mysql_fetch_row(result))) {
+        printf("- IP [%d] : %s\n", i,row[1]);
+        printf("\n");
+        i++;
+    }
+
+    // Libération du résultat de la requête SELECT
+    mysql_free_result(result);
+
+}

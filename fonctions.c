@@ -169,6 +169,7 @@ void calculer_IP(const char* ip, const char* mask, char* premiereIP, char* derni
     sprintf(derniereIP, "%d.%d.%d.%d", broadcastParts[0], broadcastParts[1], broadcastParts[2], broadcastParts[3]);
 }
 
+
 void rechercher_mask(){
     char ip[16], mask[16], premiere_ip[16], derniere_ip[16];
     printf("Veuillez entrer une adresse IP : ");
@@ -181,6 +182,11 @@ void rechercher_mask(){
         calculer_IP(ip, mask, premiere_ip, derniere_ip);
         printf("Première adresse IP du réseau: %s\n", premiere_ip);
         printf("Dernière adresse IP du réseau: %s\n", derniere_ip);
+
+        printf("Liste des ip dans ce réseaux disposant du même masque:\n");
+
+        recherche(premiere_ip, derniere_ip, mask);
+
     } else {
         printf("L'adresse IP %s n'est pas valide.\n", ip);
     }
