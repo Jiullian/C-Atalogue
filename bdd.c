@@ -5,17 +5,19 @@
 #include "bdd.h"
 #include "fonctions.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <mysql/mysql.h>
+#include <string.h>
 
 MYSQL *conn;
 
 void connexion(){
 
-   // const char *host = "192.168.1.38";
-   // const char *user = "desktop-theo-1.home";
+   const char *host = "192.168.1.38";
+   const char *user = "desktop-theo-1.home";
     
-    const char *host = "localhost";
-    const char *user = "jiullian";
+    //const char *host = "localhost";
+    //const char *user = "jiullian";
     const char *password = "root";
     const char *dbname = "CATALOGUE";
 
@@ -126,7 +128,13 @@ void suppression(const char *ip) {
     }
 }
 
-void recherche(const char *ip_a, const char *ip_b, const char *mask){
+typedef struct {
+    char ip[16];
+    char hex[16];
+    char binary[36];
+} IPInfo;
+
+void recherche(const char *ip_a, const char *ip_b, const char *mask) {
     MYSQL_RES *result;
     MYSQL_ROW row;
 
@@ -149,15 +157,37 @@ void recherche(const char *ip_a, const char *ip_b, const char *mask){
         return;
     }
 
-    int i = 1;
-    // Affichage du résultat de la requête SELECT
-    while ((row = mysql_fetch_row(result))) {
-        printf("- IP [%d] : %s\n", i,row[1]);
-        printf("\n");
+    int count = mysql_num_rows(result);
+    IPInfo *results = malloc(count * sizeof(IPInfo));
+
+    int i = 0;
+    while ((row = mysql_fetch_row(result)) && i < count) {
+        strncpy(results[i].ip, row[1], 15); // Supposons que row[1] est l'adresse IP
+        strncpy(results[i].hex, row[4], 15); // Supposons que row[2] est la version hexadécimale
+        strncpy(results[i].binary, row[3], 35); // Supposons que row[3] est la version binaire
+        results[i].ip[15] = '\0';
+        results[i].hex[15] = '\0';
+        results[i].binary[35] = '\0';
+        printf("%d- %s\n", i + 1, results[i].ip);
         i++;
     }
 
-    // Libération du résultat de la requête SELECT
-    mysql_free_result(result);
+    // Demande de choix à l'utilisateur
+    printf("Entrez un numéro pour sélectionner une IP ou 'q' pour quitter:\n");
+    char input[10];
+    scanf("%s", input);
 
+    // Traitement du choix
+    if (input[0] == 'q') {
+        printf("Quitter\n");
+    } else {
+        int choix = atoi(input);
+        if (choix >= 1 && choix <= count) {
+            printf("IP: %s\nHex: %s\nBinary: %s\n", results[choix - 1].ip, results[choix - 1].hex, results[choix - 1].binary);
+        } else {
+            printf("Choix non valide\n");
+        }
+    }
+
+    mysql_free_result(result);
 }
