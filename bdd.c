@@ -6,18 +6,24 @@
 #include "fonctions.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <mysql/mysql.h>
 #include <string.h>
+#include <gtk/gtk.h>
+#include <gtk/gtkwidget.h>
 
 MYSQL *conn;
 
+typedef struct {
+    char ip[16];
+    char hex[16];
+    char binary[36];
+} IPInfo;
+
 void connexion(){
 
-   const char *host = "192.168.1.38";
-   const char *user = "desktop-theo-1.home";
-    
-    //const char *host = "localhost";
-    //const char *user = "jiullian";
+    const char *host = "localhost";
+    const char *user = "jiullian";
     const char *password = "root";
     const char *dbname = "CATALOGUE";
 
@@ -78,18 +84,16 @@ void insertion(const char *ip, const char *mask, const char *IP_Binaire, const c
     printf("Insertion effectuée avec succès.\n");
 }
 
-void liste(){
+void remplir_liste_ip(GtkWidget *list_box) {
     MYSQL_RES *result;
     MYSQL_ROW row;
 
-    // Exécution de la requête SELECT
     if (mysql_query(conn, "SELECT IP FROM Reseau")) {
         fprintf(stderr, "Erreur mysql_query: %s\n", mysql_error(conn));
         mysql_close(conn);
         return;
     }
 
-    // Récupération du résultat de la requête SELECT
     result = mysql_store_result(conn);
     if (result == NULL) {
         fprintf(stderr, "Erreur mysql_store_result: %s\n", mysql_error(conn));
@@ -97,14 +101,11 @@ void liste(){
         return;
     }
 
-    int i = 1;
-    // Affichage du résultat de la requête SELECT
     while ((row = mysql_fetch_row(result))) {
-        printf("%d- %s\n", i, row[0]);
-        i++;
+        GtkWidget *label = gtk_label_new(row[0]);
+        gtk_list_box_insert(GTK_LIST_BOX(list_box), label, -1);
     }
 
-    // Libération du résultat de la requête SELECT
     mysql_free_result(result);
 }
 
@@ -128,66 +129,45 @@ void suppression(const char *ip) {
     }
 }
 
-typedef struct {
-    char ip[16];
-    char hex[16];
-    char binary[36];
-} IPInfo;
-
-void recherche(const char *ip_a, const char *ip_b, const char *mask) {
+void rechercher_et_afficher_par_mask_gtk(const char *mask, GtkWindow *parent_window) {
     MYSQL_RES *result;
     MYSQL_ROW row;
-
-    // Construction de la requête SELECT
     char query[1024];
-    sprintf(query, "SELECT * FROM Reseau WHERE ip BETWEEN '%s' AND '%s' AND mask = '%s'", ip_a, ip_b, mask);
 
-    // Exécution de la requête SELECT
+    // Assurez-vous d'avoir déjà connecté à votre base de données
+    sprintf(query, "SELECT * FROM Reseau WHERE mask = '%s'", mask);
+
     if (mysql_query(conn, query)) {
-        fprintf(stderr, "Erreur mysql_query: %s\n", mysql_error(conn));
-        mysql_close(conn);
+        fprintf(stderr, "Erreur lors de l'exécution de la requête: %s\n", mysql_error(conn));
         return;
     }
 
-    // Récupération du résultat de la requête SELECT
     result = mysql_store_result(conn);
-    if (result == NULL) {
-        fprintf(stderr, "Erreur mysql_store_result: %s\n", mysql_error(conn));
-        mysql_close(conn);
+    if (!result) {
+        fprintf(stderr, "Erreur lors de la récupération des résultats: %s\n", mysql_error(conn));
         return;
     }
 
-    int count = mysql_num_rows(result);
-    IPInfo *results = malloc(count * sizeof(IPInfo));
+    // Création de la fenêtre pour afficher les résultats
+    GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    GtkWidget *scrolled_window = gtk_scrolled_window_new(NULL, NULL);
+    GtkWidget *list_box = gtk_list_box_new();
 
-    int i = 0;
-    while ((row = mysql_fetch_row(result)) && i < count) {
-        strncpy(results[i].ip, row[1], 15); // Supposons que row[1] est l'adresse IP
-        strncpy(results[i].hex, row[4], 15); // Supposons que row[2] est la version hexadécimale
-        strncpy(results[i].binary, row[3], 35); // Supposons que row[3] est la version binaire
-        results[i].ip[15] = '\0';
-        results[i].hex[15] = '\0';
-        results[i].binary[35] = '\0';
-        printf("%d- %s\n", i + 1, results[i].ip);
-        i++;
+    gtk_window_set_title(GTK_WINDOW(window), "Résultats de recherche par mask");
+    gtk_container_set_border_width(GTK_CONTAINER(window), 10);
+    gtk_window_set_default_size(GTK_WINDOW(window), 300, 250);
+
+    gtk_container_add(GTK_CONTAINER(window), scrolled_window);
+    gtk_container_add(GTK_CONTAINER(scrolled_window), list_box);
+
+    // Peupler la liste avec les résultats de la requête
+    while ((row = mysql_fetch_row(result))) {
+        char *display_text = g_strdup_printf("IP: %s, Mask: %s, Binary: %s, Hex: %s", row[1], row[2], row[3], row[4]);
+        GtkWidget *label = gtk_label_new(display_text);
+        gtk_list_box_insert(GTK_LIST_BOX(list_box), label, -1);
+        g_free(display_text);
     }
 
-    // Demande de choix à l'utilisateur
-    printf("Entrez un numéro pour sélectionner une IP ou 'q' pour quitter:\n");
-    char input[10];
-    scanf("%s", input);
-
-    // Traitement du choix
-    if (input[0] == 'q') {
-        printf("Quitter\n");
-    } else {
-        int choix = atoi(input);
-        if (choix >= 1 && choix <= count) {
-            printf("IP: %s\nHex: %s\nBinary: %s\n", results[choix - 1].ip, results[choix - 1].hex, results[choix - 1].binary);
-        } else {
-            printf("Choix non valide\n");
-        }
-    }
-
+    gtk_widget_show_all(window);
     mysql_free_result(result);
 }

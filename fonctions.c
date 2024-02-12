@@ -7,6 +7,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <math.h>
+#include <gtk/gtk.h>
 #include "bdd.h"
 
 bool verifier_ip(char ip[16]) {
@@ -90,37 +91,126 @@ char* conversion_hexadecimal(char ip[16]) {
     return IP_Hexadecimal;
 }
 
-void ajouter_ip(){
-    char ip[16], mask[16];
-    printf("Veuillez entrer une adresse IP : ");
-    scanf(" %s", ip);
-    printf("Veuillez entrer un masque : ");
-    scanf(" %s", mask);
-    if (verifier_ip(ip) && verifier_mask(mask)){
-        printf("L'adresse IP et le masque sont valides.\n", ip);
-        char *IP_Binaire = conversion_binaire(ip);
-        char *IP_Hexadecimal = conversion_hexadecimal(ip);
+void ajouter_ip_gtk(const char *ip, const char *mask, GtkWidget *parent_window) {
+    if (verifier_ip((char *)ip) && verifier_mask((char *)mask)) {
+        printf("L'adresse IP et le masque sont valides.\n");
+        char *IP_Binaire = conversion_binaire((char *)ip);
+        char *IP_Hexadecimal = conversion_hexadecimal((char *)ip);
         insertion(ip, mask, IP_Binaire, IP_Hexadecimal);
+        // Afficher un message de réussite ici, en supposant que l'insertion a réussi
+        GtkWidget *success_dialog = gtk_message_dialog_new(GTK_WINDOW(parent_window),
+                                                           GTK_DIALOG_DESTROY_WITH_PARENT,
+                                                           GTK_MESSAGE_INFO,
+                                                           GTK_BUTTONS_OK,
+                                                           "L'adresse IP a été ajoutée avec succès.");
+        gtk_dialog_run(GTK_DIALOG(success_dialog));
+        gtk_widget_destroy(success_dialog);
     } else {
-        printf("L'adresse IP %s n'est pas valide.\n", ip);
+        printf("L'adresse IP ou le masque n'est pas valide.\n");
+        GtkWidget *error_dialog = gtk_message_dialog_new(GTK_WINDOW(parent_window),
+                                                         GTK_DIALOG_DESTROY_WITH_PARENT,
+                                                         GTK_MESSAGE_ERROR,
+                                                         GTK_BUTTONS_CLOSE,
+                                                         "L'adresse IP ou le masque n'est pas valide.");
+        gtk_dialog_run(GTK_DIALOG(error_dialog));
+        gtk_widget_destroy(error_dialog);
     }
 }
 
-void lister_ip(){
-    printf("Liste des IP enregistrées :\n");
-    liste();
+void on_ajouter_ip_clicked(GtkWidget *widget, gpointer data) {
+    // Création d'une boîte de dialogue avec des champs de saisie pour l'IP et le masque
+    GtkWidget *dialog, *content_area, *ip_entry, *mask_entry, *grid;
+
+    dialog = gtk_dialog_new_with_buttons("Ajouter une nouvelle adresse IP",
+                                         GTK_WINDOW(data), // Assurez-vous de passer la fenêtre principale comme data si nécessaire
+                                         GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+                                         "_Ajouter", GTK_RESPONSE_ACCEPT,
+                                         "_Annuler", GTK_RESPONSE_REJECT,
+                                         NULL);
+
+    content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+    grid = gtk_grid_new();
+    gtk_container_add(GTK_CONTAINER(content_area), grid);
+
+    ip_entry = gtk_entry_new();
+    gtk_grid_attach(GTK_GRID(grid), gtk_label_new("Adresse IP:"), 0, 0, 1, 1);
+    gtk_grid_attach(GTK_GRID(grid), ip_entry, 1, 0, 1, 1);
+
+    mask_entry = gtk_entry_new();
+    gtk_grid_attach(GTK_GRID(grid), gtk_label_new("Masque:"), 0, 1, 1, 1);
+    gtk_grid_attach(GTK_GRID(grid), mask_entry, 1, 1, 1, 1);
+
+    gtk_widget_show_all(dialog);
+    gint response = gtk_dialog_run(GTK_DIALOG(dialog));
+
+    if (response == GTK_RESPONSE_ACCEPT) {
+        const char *ip = gtk_entry_get_text(GTK_ENTRY(ip_entry));
+        const char *mask = gtk_entry_get_text(GTK_ENTRY(mask_entry));
+        ajouter_ip_gtk(ip, mask, GTK_WIDGET(data)); // Assurez-vous que `data` est la fenêtre principale ou appropriée
+    }
+
+    gtk_widget_destroy(dialog);
 }
 
-void supprimer_ip(){
-    char ip[16];
-    printf("Veuillez entrer l'adresse IP à supprimer : ");
-    scanf(" %s", ip);
-    if (verifier_ip(ip)){
-        printf("L'adresse IP est valide.\n", ip);
-        suppression(ip);
-    } else {
-        printf("L'adresse IP %s n'est pas valide.\n", ip);
+void on_afficher_ips_clicked(GtkWidget *widget, gpointer data) {
+    GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    GtkWidget *scroll_window = gtk_scrolled_window_new(NULL, NULL);
+    GtkWidget *list_box = gtk_list_box_new();
+
+    gtk_window_set_title(GTK_WINDOW(window), "Liste des adresses IP");
+    gtk_window_set_default_size(GTK_WINDOW(window), 400, 300);
+
+    gtk_container_add(GTK_CONTAINER(window), scroll_window);
+    gtk_container_add(GTK_CONTAINER(scroll_window), list_box);
+
+    // Appel à une nouvelle fonction pour remplir la liste
+    remplir_liste_ip(list_box);
+
+    gtk_widget_show_all(window);
+}
+
+void on_supprimer_ip_clicked(GtkWidget *widget, gpointer data) {
+    GtkWidget *dialog, *ip_entry, *content_area;
+    GtkDialogFlags flags = GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT;
+    dialog = gtk_dialog_new_with_buttons("Supprimer une adresse IP",
+                                         GTK_WINDOW(data),
+                                         flags,
+                                         "_Annuler",
+                                         GTK_RESPONSE_CANCEL,
+                                         "_Supprimer",
+                                         GTK_RESPONSE_ACCEPT,
+                                         NULL);
+
+    content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+    ip_entry = gtk_entry_new();
+    gtk_entry_set_placeholder_text(GTK_ENTRY(ip_entry), "Entrez l'adresse IP à supprimer");
+    gtk_container_add(GTK_CONTAINER(content_area), ip_entry);
+
+    gtk_widget_show_all(dialog);
+
+    gint response = gtk_dialog_run(GTK_DIALOG(dialog));
+    if (response == GTK_RESPONSE_ACCEPT) {
+        const char *ip = gtk_entry_get_text(GTK_ENTRY(ip_entry));
+        if (verifier_ip((char *)ip)) {
+            suppression(ip);
+            GtkWidget *success_dialog = gtk_message_dialog_new(GTK_WINDOW(data),
+                                                               GTK_DIALOG_DESTROY_WITH_PARENT,
+                                                               GTK_MESSAGE_INFO,
+                                                               GTK_BUTTONS_OK,
+                                                               "Adresse IP supprimée avec succès.");
+            gtk_dialog_run(GTK_DIALOG(success_dialog));
+            gtk_widget_destroy(success_dialog);
+        } else {
+            GtkWidget *error_dialog = gtk_message_dialog_new(GTK_WINDOW(data),
+                                                             GTK_DIALOG_DESTROY_WITH_PARENT,
+                                                             GTK_MESSAGE_ERROR,
+                                                             GTK_BUTTONS_CLOSE,
+                                                             "L'adresse IP n'est pas valide.");
+            gtk_dialog_run(GTK_DIALOG(error_dialog));
+            gtk_widget_destroy(error_dialog);
+        }
     }
+    gtk_widget_destroy(dialog);
 }
 
 int conversion_CIDR(char *Mask_Binaire) {
@@ -170,25 +260,26 @@ void calculer_IP(const char* ip, const char* mask, char* premiereIP, char* derni
 }
 
 
-void rechercher_mask(){
-    char ip[16], mask[16], premiere_ip[16], derniere_ip[16];
-    printf("Veuillez entrer une adresse IP : ");
-    scanf(" %s", ip);
-    printf("Veuillez entrer un masque : ");
-    scanf(" %s", mask);
-    if (verifier_ip(ip) && verifier_mask(mask)){
-        printf("L'adresse IP et le masque sont valides.\n", ip);
-        int nb_ip = ip_disponibles(mask);
-        calculer_IP(ip, mask, premiere_ip, derniere_ip);
-        printf("Première adresse IP du réseau: %s\n", premiere_ip);
-        printf("Dernière adresse IP du réseau: %s\n", derniere_ip);
+void on_rechercher_par_mask_clicked(GtkWidget *widget, gpointer data) {
+    // Créer une boîte de dialogue pour saisir le mask
+    GtkWidget *dialog = gtk_dialog_new_with_buttons("Rechercher par mask",
+                                                    GTK_WINDOW(data),
+                                                    GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+                                                    "_Rechercher", GTK_RESPONSE_ACCEPT,
+                                                    "_Annuler", GTK_RESPONSE_REJECT,
+                                                    NULL);
+    GtkWidget *mask_entry = gtk_entry_new();
+    gtk_entry_set_placeholder_text(GTK_ENTRY(mask_entry), "Entrez le mask");
+    GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+    gtk_container_add(GTK_CONTAINER(content_area), mask_entry);
 
-        printf("Liste des ip dans ce réseaux disposant du même masque:\n");
+    gtk_widget_show_all(dialog);
 
-        recherche(premiere_ip, derniere_ip, mask);
-
-    } else {
-        printf("L'adresse IP %s n'est pas valide.\n", ip);
+    gint result = gtk_dialog_run(GTK_DIALOG(dialog));
+    if (result == GTK_RESPONSE_ACCEPT) {
+        const char *mask = gtk_entry_get_text(GTK_ENTRY(mask_entry));
+        rechercher_et_afficher_par_mask_gtk(mask, GTK_WINDOW(data));
     }
-}
 
+    gtk_widget_destroy(dialog);
+}

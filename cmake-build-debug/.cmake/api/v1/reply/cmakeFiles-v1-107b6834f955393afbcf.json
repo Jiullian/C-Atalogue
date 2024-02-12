@@ -50,6 +50,21 @@
 		{
 			"isCMake" : true,
 			"isExternal" : true,
+			"path" : "/home/jiullian/T\u00e9l\u00e9chargements/clion-2023.3.3/bin/cmake/linux/x64/share/cmake-3.27/Modules/CMakeFindCodeBlocks.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/home/jiullian/T\u00e9l\u00e9chargements/clion-2023.3.3/bin/cmake/linux/x64/share/cmake-3.27/Modules/CMakeExtraGeneratorDetermineCompilerMacrosAndIncludeDirs.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/home/jiullian/T\u00e9l\u00e9chargements/clion-2023.3.3/bin/cmake/linux/x64/share/cmake-3.27/Modules/ProcessorCount.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
 			"path" : "/home/jiullian/T\u00e9l\u00e9chargements/clion-2023.3.3/bin/cmake/linux/x64/share/cmake-3.27/Modules/CMakeCInformation.cmake"
 		},
 		{
@@ -86,6 +101,21 @@
 			"isCMake" : true,
 			"isExternal" : true,
 			"path" : "/home/jiullian/T\u00e9l\u00e9chargements/clion-2023.3.3/bin/cmake/linux/x64/share/cmake-3.27/Modules/CMakeCommonLanguageInclude.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/home/jiullian/T\u00e9l\u00e9chargements/clion-2023.3.3/bin/cmake/linux/x64/share/cmake-3.27/Modules/FindPkgConfig.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/home/jiullian/T\u00e9l\u00e9chargements/clion-2023.3.3/bin/cmake/linux/x64/share/cmake-3.27/Modules/FindPackageHandleStandardArgs.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "/home/jiullian/T\u00e9l\u00e9chargements/clion-2023.3.3/bin/cmake/linux/x64/share/cmake-3.27/Modules/FindPackageMessage.cmake"
 		}
 	],
 	"kind" : "cmakeFiles",

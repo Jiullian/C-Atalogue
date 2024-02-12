@@ -9,5 +9,9 @@ void ajouter_ip();
 void lister_ip();
 void supprimer_ip();
 void rechercher_mask();
+void on_ajouter_ip_clicked();
+void on_afficher_ips_clicked();
+void on_supprimer_ip_clicked();
+void on_rechercher_par_mask_clicked();
 
 #endif //C_ATALOGUE_FONCTIONS_H
